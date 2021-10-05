@@ -1,0 +1,72 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.simlpecamera"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="30" />
+10
+11    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+11-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/debug/AndroidManifest.xml:5:5-77
+11-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/debug/AndroidManifest.xml:5:22-75
+12    <uses-permission android:name="android.permission.CAMERA" />
+12-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:4:5-65
+12-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:4:22-62
+13    <uses-permission android:name="android.permission.INTERNET" />
+13-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:5:5-67
+13-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:5:22-64
+14    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+14-->[com.facebook.flipper:flipper:0.99.0] /Users/andreyklopov/.gradle/caches/transforms-3/2f5725507f1929c6ddf8255f0bef77bd/transformed/jetified-flipper-0.99.0/AndroidManifest.xml:16:5-76
+14-->[com.facebook.flipper:flipper:0.99.0] /Users/andreyklopov/.gradle/caches/transforms-3/2f5725507f1929c6ddf8255f0bef77bd/transformed/jetified-flipper-0.99.0/AndroidManifest.xml:16:22-73
+15
+16    <application
+16-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:7:5-25:19
+17        android:name="com.simlpecamera.MainApplication"
+17-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:8:7-38
+18        android:allowBackup="false"
+18-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:12:7-34
+19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+19-->[androidx.core:core:1.5.0] /Users/andreyklopov/.gradle/caches/transforms-3/5646db46e2cfb43e7b3d42f3054c498c/transformed/core-1.5.0/AndroidManifest.xml:24:18-86
+20        android:debuggable="true"
+21        android:icon="@mipmap/ic_launcher"
+21-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:10:7-41
+22        android:label="@string/app_name"
+22-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:9:7-39
+23        android:roundIcon="@mipmap/ic_launcher_round"
+23-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:11:7-52
+24        android:testOnly="true"
+25        android:theme="@style/AppTheme"
+25-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:13:7-38
+26        android:usesCleartextTraffic="true" >
+26-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/debug/AndroidManifest.xml:8:9-44
+27        <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+27-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/debug/AndroidManifest.xml:11:9-86
+27-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/debug/AndroidManifest.xml:11:19-83
+28        <activity
+28-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:14:7-24:18
+29            android:name="com.simlpecamera.MainActivity"
+29-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:15:9-37
+30            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+30-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:17:9-86
+31            android:label="@string/app_name"
+31-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:16:9-41
+32            android:launchMode="singleTask"
+32-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:18:9-40
+33            android:windowSoftInputMode="adjustResize" >
+33-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:19:9-51
+34            <intent-filter>
+34-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:20:9-23:25
+35                <action android:name="android.intent.action.MAIN" />
+35-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:21:13-65
+35-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:21:21-62
+36
+37                <category android:name="android.intent.category.LAUNCHER" />
+37-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:22:13-73
+37-->/Users/andreyklopov/Heartify/SimpleCameraAndroidApp/android/app/src/main/AndroidManifest.xml:22:23-70
+38            </intent-filter>
+39        </activity>
+40    </application>
+41
+42</manifest>

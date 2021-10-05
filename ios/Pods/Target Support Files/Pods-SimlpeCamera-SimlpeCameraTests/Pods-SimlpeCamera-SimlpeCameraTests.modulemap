@@ -1,0 +1,6 @@
+module Pods_SimlpeCamera_SimlpeCameraTests {
+  umbrella header "Pods-SimlpeCamera-SimlpeCameraTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

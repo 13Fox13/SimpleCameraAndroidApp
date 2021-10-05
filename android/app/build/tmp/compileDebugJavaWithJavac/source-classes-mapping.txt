@@ -1,0 +1,32 @@
+com/simlpecamera/heartRateTracker/modules/pulse/heartRateAlgorithm/pulseDetector/HeartRatePulseDetector.java
+ com.simlpecamera.heartRateTracker.modules.pulse.heartRateAlgorithm.pulseDetector.HeartRatePulse
+ com.simlpecamera.heartRateTracker.modules.pulse.heartRateAlgorithm.pulseDetector.HeartRatePulseDetector
+com/facebook/react/PackageList.java
+ com.facebook.react.PackageList
+com/simlpecamera/heartRateTracker/modules/pulse/heartRateAlgorithm/pulseDetector/HeartRateHueFilter.java
+ com.simlpecamera.heartRateTracker.modules.pulse.heartRateAlgorithm.pulseDetector.HeartRateHueFilter
+ com.simlpecamera.heartRateTracker.modules.pulse.heartRateAlgorithm.pulseDetector.Rough
+com/simlpecamera/heartRateTracker/HeartRateImpModule.java
+ com.simlpecamera.heartRateTracker.HeartRateImpModule
+com/simlpecamera/MainApplication.java
+ com.simlpecamera.MainApplication
+ com.simlpecamera.MainApplication$1
+com/simlpecamera/ReactNativeFlipper.java
+ com.simlpecamera.ReactNativeFlipper
+ com.simlpecamera.ReactNativeFlipper$1
+ com.simlpecamera.ReactNativeFlipper$2
+ com.simlpecamera.ReactNativeFlipper$2$1
+com/simlpecamera/MainActivity.java
+ com.simlpecamera.MainActivity
+com/simlpecamera/heartRateTracker/modules/pulse/HeartRateService.java
+ com.simlpecamera.heartRateTracker.modules.pulse.HeartRateService
+com/simlpecamera/BuildConfig.java
+ com.simlpecamera.BuildConfig
+com/simlpecamera/CameraModule.java
+ com.simlpecamera.CameraModule
+ com.simlpecamera.CameraModule$1
+ com.simlpecamera.CameraModule$2
+ com.simlpecamera.CameraModule$3
+ com.simlpecamera.CameraModule$4
+com/simlpecamera/CameraPackage.java
+ com.simlpecamera.CameraPackage
