@@ -1,21 +1,12 @@
 package com.simlpecamera;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureRequest;
-import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaFormat;
+import android.graphics.ImageFormat;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -37,26 +28,22 @@ import com.simlpecamera.heartRateTracker.HeartRateImpModule;
 
 import org.apache.commons.codec.binary.Hex;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
+
 
 public class CameraModule extends ReactContextBaseJavaModule {
-    private MediaCodec mediaCodec;
-    private Surface encoderSurface;
-    private CameraManager cameraManager;
-    private CaptureRequest.Builder captureBuilder;
     private HandlerThread backgroundThread;
     private Handler backgroundHandler;
-    private CameraDevice cameraDevice;
-    private CameraCaptureSession captureSession;
-    private SensorManager sensorManager;
-    private float accX = 0.0f;
-    private float accY = 0.0f;
-    private float accZ = 0.0f;
-    private Boolean motion = false;
+    private Surface surface;
+    private ImageReader imageReader;
+    private int count;
 
-    private HeartRateImpModule heartRateImpModule = new HeartRateImpModule();
-
+    private final HeartRateImpModule heartRateImpModule = new HeartRateImpModule();
+    private final SensorsService sensorsService = new SensorsService();
+    private final CameraService cameraService = new CameraService();
 
     public CameraModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -78,12 +65,8 @@ public class CameraModule extends ReactContextBaseJavaModule {
                 activity.requestPermissions(new String[]{Manifest.permission.CAMERA}, 100,
                         (requestCode, permissions, grantResults) -> {
                             if (requestCode == 100) {
-                                if (grantResults.length > 0
-                                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                                    return true;
-                                } else {
-                                    return false;
-                                }
+                                return grantResults.length > 0
+                                        && grantResults[0] == PackageManager.PERMISSION_GRANTED;
                             }
                             return false;
                         });
@@ -101,21 +84,18 @@ public class CameraModule extends ReactContextBaseJavaModule {
         WritableMap map = Arguments.createMap();
         map.putBoolean("value", permissions());
         sendEvent("onPermission", map);
-        sensorManager = (SensorManager) getReactApplicationContext().getSystemService(Context.SENSOR_SERVICE);
-        Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(accListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-        heartRateImpModule.startTracking();
         startBackgroundThread();
-        setUpMediaCodec();
-        loadCamera();
+        prepareImageReader();
+        sensorsService.init(getReactApplicationContext());
+        cameraService.init(getReactApplicationContext(), surface, backgroundHandler);
+        heartRateImpModule.startTracking();
     }
 
     @ReactMethod
     public void stopTracking() {
         heartRateImpModule.stopTracking();
-        sensorManager.unregisterListener(accListener);
-        stopStreamingVideo();
-        closeCamera();
+        sensorsService.destroy();
+        cameraService.destroy();
         stopBackgroundThread();
     }
 
@@ -124,35 +104,16 @@ public class CameraModule extends ReactContextBaseJavaModule {
         heartRateImpModule.finishTracking();
     }
 
-    private SensorEventListener accListener = new SensorEventListener() {
-        public void onAccuracyChanged(Sensor sensor, int acc) {
-        }
-
-        public void onSensorChanged(SensorEvent event) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-
-            checkMotion(x, y, z);
-        }
-    };
-
-    private void checkMotion(final float x,
-                             final float y,
-                             final float z) {
-        float delta = 0.3f;
-        Boolean motionX = Math.abs(accX - x) > delta;
-        Boolean motionY = Math.abs(accY - y) > delta;
-        Boolean motionZ = Math.abs(accZ - z) > delta;
-
-        motion = motionX || motionY || motionZ;
-        accX = x;
-        accY = y;
-        accZ = z;
+    private void prepareImageReader() {
+        imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG,
+                10);
+        imageReader.setOnImageAvailableListener(onImageAvailableListener, backgroundHandler);
+        surface = imageReader.getSurface();
     }
 
     private void startBackgroundThread() {
         backgroundThread = new HandlerThread("CameraBackground");
+        backgroundThread.setPriority(Thread.NORM_PRIORITY);
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
     }
@@ -170,145 +131,47 @@ public class CameraModule extends ReactContextBaseJavaModule {
         }
     }
 
-    private void loadCamera() {
-        cameraManager = (CameraManager) getReactApplicationContext().getSystemService(Context.CAMERA_SERVICE);
+    protected ImageReader.OnImageAvailableListener onImageAvailableListener = reader -> {
+        Image img = reader.acquireLatestImage();
+        if (img != null) {
+            ByteBuffer byteBuffer = img.getPlanes()[0].getBuffer();
+            byte[] outData = new byte[byteBuffer.remaining()];
+            byteBuffer.get(outData);
+            img.close();
+            //Uncomment it if you want to save images to local storage
+            // !!! it will be a huge
+            //saveImage(outData);
+            WritableMap map = Arguments.createMap();
+            map.putString("data", Hex.encodeHexString(outData));
+            map.putBoolean("motion", sensorsService.getMotion());
+            sendEvent("onHeartRateState", heartRateImpModule.handle(outData));
+        }
+    };
+
+    private void saveImage(byte[] data) {
+        File file = new File(Environment.getExternalStorageDirectory(), "killme" + count + ".jpg");
+        FileOutputStream output = null;
         try {
-            String[] availableCameras = cameraManager.getCameraIdList();
-            if (availableCameras[0] != null && cameraDevice == null) {
-                if (ContextCompat.checkSelfPermission(getReactApplicationContext(),
-                        Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                    cameraManager.openCamera(availableCameras[0], new CameraDevice.StateCallback() {
-
-                        @Override
-                        public void onOpened(CameraDevice camera) {
-                            cameraDevice = camera;
-                            startCameraSession();
-                        }
-
-                        @Override
-                        public void onDisconnected(CameraDevice camera) {
-                            cameraDevice.close();
-                            cameraDevice = null;
-                        }
-
-                        @Override
-                        public void onError(CameraDevice camera, int error) {
-                        }
-                    }, backgroundHandler);
+            output = new FileOutputStream(file);
+            output.write(data);
+            count++;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (null != output) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
         }
-    }
-
-    private void closeCamera() {
-        if (cameraDevice != null) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
-    }
-
-    private void startCameraSession() {
-        try {
-            captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-            captureBuilder.addTarget(encoderSurface);
-
-            cameraDevice.createCaptureSession(Collections.singletonList(encoderSurface),
-                    new CameraCaptureSession.StateCallback() {
-
-                        @Override
-                        public void onConfigured(CameraCaptureSession session) {
-                            captureSession = session;
-
-                            try {
-                                captureSession.setRepeatingRequest(captureBuilder.build(),
-                                        null, backgroundHandler);
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        @Override
-                        public void onConfigureFailed(CameraCaptureSession session) {
-                        }
-                    }, backgroundHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setUpMediaCodec() {
-        try {
-            mediaCodec = MediaCodec.createEncoderByType("video/avc"); // H264 codec
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int width = 320;
-        int height = 240;
-        int colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
-        int videoBitrate = 500000;
-        int videoFramePerSecond = 20; // FPS
-        int iframeInterval = 2; // I-Frame interval in sec
-
-        MediaFormat format = MediaFormat.createVideoFormat("video/avc", width, height);
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, videoBitrate);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, videoFramePerSecond);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iframeInterval);
-
-        mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        encoderSurface = mediaCodec.createInputSurface();
-
-        mediaCodec.setCallback(new MediaCodec.Callback() {
-            @Override
-            public void onInputBufferAvailable(@NonNull MediaCodec codec, int index) {
-            }
-
-            @Override
-            public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index,
-                                                @NonNull MediaCodec.BufferInfo info) {
-                ByteBuffer outPutByteBuffer = mediaCodec.getOutputBuffer(index);
-                byte[] outDate = new byte[info.size];
-                outPutByteBuffer.get(outDate);
-
-                WritableMap map = Arguments.createMap();
-                map.putString("data", Hex.encodeHexString(outDate));
-                map.putBoolean("motion", motion);
-                sendEvent("onHeartRateState", heartRateImpModule.handle(outDate));
-                mediaCodec.releaseOutputBuffer(index, false);
-            }
-
-            @Override
-            public void onError(@NonNull MediaCodec codec, @NonNull MediaCodec.CodecException e) {
-            }
-
-            @Override
-            public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
-            }
-        });
-        mediaCodec.start();
     }
 
     private void sendEvent(String eventName,
-                                 @Nullable WritableMap params) {
+                           @Nullable WritableMap params) {
         getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
-    }
-
-    private void stopStreamingVideo() {
-        if (cameraDevice != null & mediaCodec != null) {
-            try {
-                captureSession.stopRepeating();
-                captureSession.abortCaptures();
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
-            }
-            mediaCodec.stop();
-            mediaCodec.release();
-            encoderSurface.release();
-            closeCamera();
-        }
     }
 }
