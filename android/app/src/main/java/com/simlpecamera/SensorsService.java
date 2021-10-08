@@ -22,6 +22,7 @@ public class SensorsService {
     }
 
     public void destroy() {
+        if (sensorManager != null)
         sensorManager.unregisterListener(accListener);
     }
 

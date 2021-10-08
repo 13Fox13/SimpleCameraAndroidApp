@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -26,12 +25,11 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.simlpecamera.heartRateTracker.HeartRateImpModule;
 
-import org.apache.commons.codec.binary.Hex;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 
 public class CameraModule extends ReactContextBaseJavaModule {
@@ -142,7 +140,7 @@ public class CameraModule extends ReactContextBaseJavaModule {
             // !!! it will be a huge
             //saveImage(outData);
             WritableMap map = Arguments.createMap();
-            map.putString("data", Hex.encodeHexString(outData));
+            map.putString("data", new String(outData, StandardCharsets.UTF_8));
             map.putBoolean("motion", sensorsService.getMotion());
             sendEvent("onHeartRateState", heartRateImpModule.handle(outData));
         }

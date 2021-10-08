@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
@@ -41,10 +42,20 @@ public class CameraService {
         cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         try {
             String[] availableCameras = cameraManager.getCameraIdList();
-            if (availableCameras[0] != null && cameraDevice == null) {
+            String cameraId = availableCameras[0];
+            for (String availableCamera : availableCameras) {
+                CameraCharacteristics cameraCharacteristics = cameraManager
+                        .getCameraCharacteristics(availableCamera);
+                if (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) ==
+                        CameraCharacteristics.LENS_FACING_BACK) {
+                    cameraId = availableCamera;
+                    break;
+                }
+            }
+            if (cameraId != null && cameraDevice == null) {
                 if (ContextCompat.checkSelfPermission(context,
                         Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                    cameraManager.openCamera(availableCameras[0], new CameraDevice.StateCallback() {
+                    cameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
                         @Override
                         public void onOpened(CameraDevice camera) {
                             cameraDevice = camera;
